@@ -1,0 +1,13 @@
+// Agent provider in project DomesticRobot.mas2j
+
+/* Initial beliefs and rules */
+stock();
+
+/* Initial goals */
+
+!start.
+
+/* Plans */
+
++!start : true <- .print("hello world.").
+

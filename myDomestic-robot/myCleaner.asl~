@@ -1,0 +1,38 @@
+// Agent myCleaner in project DomesticRobot.mas2j
+
+/* Initial beliefs and rules */
+
+/* Initial goals */
+
+!cleanBottle.
+
+/* Plans */
+
++!cleanBottle : thrown(garb1)<-
+	.println("pick bottle 1");
+	!go_at(myCleaner,garb1);
+	pickUpBottle(garb1);
+	!go_at(myCleaner,paper);
+	thrashBottle(garb);
+	.wait(100);
+	.println("Botella echada en la basura");
+	.abolish(thrown(garb1));
+	!cleanBottle.
++!cleanBottle : thrown(garb2)<-
+	.println("pick bottle 2");
+	!go_at(myCleaner,garb2);
+	pickUpBottle(garb2);
+	!go_at(myCleaner,paper);
+	thrashBottle(garb);
+	.wait(100);
+	.println("Botella echada en la basura");
+	.abolish(thrown(garb2));
+	!cleanBottle.
++!cleanBottle<-
+	!cleanBottle.
+	
++!go_at(myCleaner,P) : at(myCleaner,P) <- true.
++!go_at(myCleaner,P) : not at(myCleaner,P)
+  <- move_towards(P);
+     !go_at(myCleaner,P).
+

@@ -1,0 +1,18 @@
+// Agent myProvider in project DomesticRobot.mas2j
+
+/* Initial beliefs and rules */
+
+cost(beer,mahou,2).
+cost(beer,estrella,2).
+cost(beer,heineken,2).
+cost(pincho,tortilla,3).
+
+
+/* Initial goals */
+
+
+/* Plans */
+
++!supply(Ag, Product, Brand, Qtd )<-
+	?cost(Product, Brand, N);
+	.send(Ag, achieve, restock(Product, Brand, Qtd,Qtd*N)).

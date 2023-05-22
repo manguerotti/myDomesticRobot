@@ -1,0 +1,22 @@
+/* Jason Project
+
+   See Prometheus specification in doc folder
+
+*/
+
+MAS domestic_robot {
+    environment: MyHouseEnv(gui) // use "nogui" as parameter to not show the GUI
+    agents: myOwner;
+			myOwner2;
+			myRobot;
+            mySupermarket;
+			mySupermarket2;
+			mySupermarket3;
+			myProvider;
+			myFridge;
+			myRobotDel;
+			myRobotDWash;
+			myDishWasher;
+			myRobotPaper;
+			myCleaner;
+}

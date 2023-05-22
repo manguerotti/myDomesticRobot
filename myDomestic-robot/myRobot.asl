@@ -1,0 +1,163 @@
+/* Initial beliefs and rules */
+
+// initially, I believe that there is some beer in the fridge
+available(beer,fridge).
+
+// my owner should not consume more than 10 beers a day :-)
+limit(beer,5).
+
+wallet(1000).
+
+turno(math.round(math.random(1))+1).
+
+too_much(B) :-
+   .date(YY,MM,DD) &
+   .count(consumed(YY,MM,DD,_,_,_,B),QtdB) &
+   limit(B,Limit) &
+   QtdB > Limit.
+
+/* Initial goals */
+
+!bringBeer.
+
+/* Plans */
+
+	 
+
++!bring(Id, P, Brand, Pincho)[source(Ag)] <-
+	+asked(Ag, Id, P, Brand, Pincho).
+	
++!bringBeer : healthMsg(_) <- 
+	!go_at(myRobot,base);
+	.println("El Robot descansa porque Owner ha bebido mucho hoy.").
+
+/*+!bringBeer : asked(beer, Brand, Pincho) & not healthMsg(_) & thrown(garb)<-
+	.println("pick bottle");
+	!go_at(myRobot,garb);
+	pickUpBottle(garb);
+	!go_at(myRobot,paper);
+	thrashBottle(garb);
+	.wait(100);
+	.println("Botella echada en la basura");
+	-thrown(garb);
+	!bringBeer.*/
++!bringBeer : asked(Ag,Id,beer, Brand, Pincho) & turno(Id) & not healthMsg(_)<-
+	.println("Owner me ha pedido una cerveza acompañado de un pincho.");
+	!go_at(myRobot,fridge);
+	!take(Ag,fridge,beer, Brand, Pincho);
+	!go_at(myRobot,Ag);
+	!hasBeer(Ag);
+	.println("Ya he servido la cerveza y el pincho y elimino la petición.");
+	.abolish(asked(Ag,Beer, Brand, Pincho));
+	.abolish(turno(Id));
+	if(Id == 1){
+		+turno(2);
+	}elif(Id == 2){
+		+turno(1);
+	}
+	!bringBeer.
++!bringBeer : not asked(Ag,Id, beer, Brand, Pincho)   & not healthMsg(_) <- 
+	.wait(2000);
+	.println("Robot esperando la petición de Owner.");
+	!bringBeer.
++!bringBeer<-!bringBeer.
+
++!take(Ag,fridge, P, Brand, Pincho) : not too_much(beer)<-
+	.println("El robot está cogiendo una cerveza y un pincho para acompañar.");
+	.send(myFridge, askOne, stock(P, Brand, S), stock(P, Brand, S));
+	.send(myFridge, askOne, stock(pincho, Pincho, Sp), stock(pincho, Pincho, Sp));
+	if(S < 6 | Sp < 6){
+		.send(myRobotDel, achieve, buy(P, Brand));
+		.send(myRobotDel, achieve, buy(pincho, Pincho));
+	}
+	!check(Ag,fridge, P, Brand,Pincho).
++!take(Ag,fridge, P,Brand, Pincho) : too_much(beer) & limit(beer, L) <-
+	.concat("The Department of Health does not allow me to give you more than ", L," beers a dftrahay! I am very sorry about that!", M);
+	-+healthMsg(M).
+	
+		
+	
++!check(myOwner,fridge, P,Brand,Pincho)<-
+	.println("El robot está en el frigorífico y coge una cerveza.");
+	.wait(100);
+	open(fridge);
+	.println("El robot abre la nevera.");
+	.wait(1000);
+	get(beer);
+	get(pincho);
+	.send(myFridge, achieve, getOne(beer,Brand));
+	.send(myFridge, achieve, getOne(pincho,Pincho));
+	.println("El robot coge una cerveza y un pincho.");
+	close(fridge);
+	.println("El robot cierra la nevera.").
++!check(myOwner2,fridge, P,Brand,Pincho)<-
+	.println("El robot está en el frigorífico y coge una cerveza.");
+	.wait(100);
+	open(fridge);
+	.println("El robot abre la nevera.");
+	.wait(1000);
+	get(beer2);
+	get(pincho2);
+	.send(myFridge, achieve, getOne(beer,Brand));
+	.send(myFridge, achieve, getOne(pincho,Pincho));
+	.println("El robot coge una cerveza y un pincho.");
+	close(fridge);
+	.println("El robot cierra la nevera.").
+
+
++!hasBeer(myOwner) : not too_much(beer) <-
+	hand_in(beer);
+	hand_in(pincho);
+	.println("He preguntado si Owner ha cogido la cerveza y el pincho.");
+	//?has(myOwner,beer);
+	//?has(myOwner,pincho);
+	.println("Se que Owner tiene la cerveza.");
+	// remember that another beer has been consumed
+	.date(YY,MM,DD); .time(HH,NN,SS);
+	+consumed(YY,MM,DD,HH,NN,SS,beer).
++!hasBeer(myOwner2) : not too_much(beer) <-
+	hand_in(beer2);
+	hand_in(pincho2);
+	.println("He preguntado si Owner ha cogido la cerveza y el pincho.");
+	?has(myOwner2,beer);
+	?has(myOwner2,pincho);
+	.println("Se que Owner tiene la cerveza.");
+	// remember that another beer has been consumed
+	.date(YY,MM,DD); .time(HH,NN,SS);
+	+consumed(YY,MM,DD,HH,NN,SS,beer).
++!hasBeer(Ag) : too_much(beer) & healthMsg(M) <- 
+	//.abolish(msg(_));
+	.send(Ag,tell,msg(M)).
+	
++!changeTurn(N)<-
+	.abolish(turno(_));
+	if(N == 1){+turno(2);}
+	elif(N == 2){+turno(1);}.
+
++!go_at(myRobot,P) : at(myRobot,P) <- true.
++!go_at(myRobot,P) : not at(myRobot,P)
+  <- move_towards(P);
+     !go_at(myRobot,P).
+
+	
++!clearPaper<-
+	clearPaper(bottle);
+	.send(myRobot,tell,msg("botella recogida")).
+	
++paper(N) : N > 2 <-
+	.concat("La papelera tiene ", N," botellas ", Capacidad);
+	.println(Capacidad);
+	.send(myRobot,tell,Capacidad).
+	 
+
+
+// when the supermarket makes a delivery, try the 'has' goal again
+
+
+
+
++?time(T) : true
+  <-  time.check(T).
+
+
+

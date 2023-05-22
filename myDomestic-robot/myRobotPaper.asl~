@@ -1,0 +1,16 @@
+// Agent myRobotPaper in project DomesticRobot.mas2j
+
+/* Initial beliefs and rules */
+
+/* Initial goals */
+
+!emptyPaper.
+
+/* Plans */
+
++!emptyPaper : paperFull <-
+	.print("La basura está llena, voy a vaciarla");
+	emptyPaper;
+	.print("Ya he vaciado la papelera");
+	!emptyPaper.
++!emptyPaper<-!emptyPaper.
